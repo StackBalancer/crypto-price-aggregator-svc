@@ -1,0 +1,49 @@
+name: CI-CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            libcurl4-openssl-dev \
+            libmicrohttpd-dev \
+            libcjson-dev \
+            cppcheck \
+            docker.io
+
+      - name: Run static analysis
+        run: make static-check
+
+      - name: Run unit tests
+        run: make test
+
+      - name: Build Docker image
+        run: docker build -t crypto-service:ci .
+
+      # 🚧 Terraform deploy
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v2
+      #
+      # - name: Terraform Init
+      #   run: terraform init
+      #
+      # - name: Terraform Plan
+      #   run: terraform plan
+      #
+      # - name: Terraform Apply
+      #   if: github.ref == 'refs/heads/main'
+      #   run: terraform apply -auto-approve
