@@ -35,6 +35,7 @@ static enum MHD_Result answer_to_connection(void *cls,
     return ret;
 }
 
+#ifndef TEST
 int main(void) {
     signal(SIGINT, handle_signal);
     signal(SIGTERM, handle_signal);
@@ -58,3 +59,4 @@ int main(void) {
     printf("Server stopped.\n");
     return 0;
 }
+#endif

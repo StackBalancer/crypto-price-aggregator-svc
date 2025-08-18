@@ -7,6 +7,8 @@ TEST_SRC = tests/test_crypto_svc.c
 BIN = crypto_service
 TEST_BIN = test_crypto_svc
 
+.PHONY: all test clean
+
 all: $(BIN)
 
 $(BIN): $(SRC)
@@ -16,7 +18,8 @@ run: $(BIN)
 	./$(BIN)
 
 test: $(SRC) $(TEST_SRC)
-	$(CC) $(TEST_SRC) $(SRC) -o $(TEST_BIN) $(CFLAGS) $(LIBS)
+	$(CC) -DTEST $(TEST_SRC) $(SRC) -o $(TEST_BIN) $(CFLAGS) $(LIBS) \
+	-Wno-unused-function
 	./$(TEST_BIN)
 
 static-check:
