@@ -23,7 +23,7 @@ jobs:
             libmicrohttpd-dev \
             libcjson-dev \
             cppcheck \
-            docker.io
+            podman
 
       - name: Run static analysis
         run: make static-check
@@ -31,8 +31,8 @@ jobs:
       - name: Run unit tests
         run: make test
 
-      - name: Build Docker image
-        run: docker build -t crypto-service:ci .
+      - name: Build container image
+        run: podman build -t crypto-service:ci .
 
       # 🚧 Terraform deploy
       # - name: Setup Terraform

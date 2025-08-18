@@ -29,7 +29,7 @@ make test
 make test
 ```
 
-## Run in Docker
+## Run in Docker (Podman)
 
 ```bash
 docker build -t crypto-service .
