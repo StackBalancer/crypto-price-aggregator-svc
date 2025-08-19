@@ -1,3 +1,10 @@
 # Ignore binary files
 crypto_service
 test_crypto_svc
+
+# Terraform
+terraform/.terraform.lock.hcl
+terraform/.terraform/
+terraform/hashicorp.gpg
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup

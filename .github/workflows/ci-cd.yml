@@ -92,3 +92,17 @@ jobs:
         run: |
           cd terraform
           terraform apply -auto-approve
+      - name: Smoke Test ECS Service
+        run: |
+          TASK_IP=$(aws ecs describe-tasks \
+            --cluster crypto-service-cluster \
+            --tasks $(aws ecs list-tasks --cluster crypto-service-cluster --query 'taskArns[0]' --output text) \
+            --query 'tasks[0].attachments[0].details[?name==`privateIPv4Address`].value' \
+            --output text)
+          echo "Testing service at $TASK_IP:8080"
+          curl -f http://$TASK_IP:8080 || exit 1
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: us-east-1
+
