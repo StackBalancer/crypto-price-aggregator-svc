@@ -73,10 +73,14 @@ jobs:
           aws-region: us-east-1
 
       - name: Terraform Init
-        run: terraform init
+        run: |
+          cd terraform
+          terraform init
 
       - name: Import ECR repository into Terraform state
         run: |
+          cd terraform
+          terraform init -input=false
           if ! terraform state list | grep -q "aws_ecr_repository.crypto_service"; then
             echo "Importing existing ECR repo into Terraform state..."
             terraform import aws_ecr_repository.crypto_service crypto-service
@@ -85,4 +89,6 @@ jobs:
           fi
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: |
+          cd terraform
+          terraform apply -auto-approve
