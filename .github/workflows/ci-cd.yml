@@ -23,8 +23,7 @@ jobs:
             libmicrohttpd-dev \
             libcjson-dev \
             cppcheck \
-            podman \
-            awscli
+            podman
 
       - name: Run static analysis
         run: make static-check
