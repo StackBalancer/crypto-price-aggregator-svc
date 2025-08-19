@@ -65,8 +65,8 @@ resource "aws_ecs_service" "crypto_service" {
   launch_type     = "FARGATE"
 
   network_configuration {
-    subnets         = var.subnets
-    security_groups = [var.security_group]
+    subnets         = [aws_subnet.public.id]
+    security_groups = [aws_security_group.crypto_service_sg.id]
     assign_public_ip = true
   }
 }
