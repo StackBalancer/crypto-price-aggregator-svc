@@ -13,7 +13,8 @@ COPY src/ src/
 
 RUN make
 
-RUN adduser --system --no-create-home crypto-svc
+# Create container user
+RUN useradd -r -s /bin/false crypto-svc
 USER crypto-svc
 
 EXPOSE 8080
