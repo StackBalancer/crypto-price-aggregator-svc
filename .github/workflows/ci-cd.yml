@@ -95,14 +95,19 @@ jobs:
 
       - name: Smoke test service
         run: |
+          # Get task ARN
           TASK_ARN=$(aws ecs list-tasks \
             --cluster crypto-service-cluster \
             --query 'taskArns[0]' \
             --output text)
 
+          # Extract task ID
+          TASK_ID=$(basename $TASK_ARN)
+
+          # Get public IP
           TASK_IP=$(aws ecs describe-tasks \
             --cluster crypto-service-cluster \
-            --tasks $TASK_ARN \
+            --tasks $TASK_ID \
             --query 'tasks[0].attachments[0].details[?name==`publicIPv4Address`].value' \
             --output text)
 

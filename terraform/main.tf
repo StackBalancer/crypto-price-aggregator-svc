@@ -5,6 +5,7 @@ provider "aws" {
 # Create ECR repo to store Docker images
 resource "aws_ecr_repository" "crypto_service" {
   name = "crypto-service"
+  force_delete = true
 }
 
 # Create ECS cluster
