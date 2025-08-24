@@ -13,5 +13,8 @@ COPY src/ src/
 
 RUN make
 
+RUN adduser --system --no-create-home crypto-svc
+USER crypto-svc
+
 EXPOSE 8080
 CMD ["./crypto_service"]

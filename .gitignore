@@ -8,3 +8,6 @@ terraform/.terraform/*
 terraform/hashicorp.gpg
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
+
+# text files
+*.txt
