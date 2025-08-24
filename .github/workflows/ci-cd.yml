@@ -93,30 +93,62 @@ jobs:
           cd terraform
           terraform apply -auto-approve
 
-      - name: Smoke test service
+      - name: Smoke test ECS service
         run: |
-          # Get task ARN
+          set -euo pipefail
+
+          echo "Waiting for service to be stable..."
+          aws ecs wait services-stable --cluster "$CLUSTER" --services "$SERVICE"
+
+          # Find a RUNNING task
           TASK_ARN=$(aws ecs list-tasks \
-            --cluster crypto-service-cluster \
+            --cluster "$CLUSTER" \
+            --desired-status RUNNING \
             --query 'taskArns[0]' \
             --output text)
 
-          # Extract task ID
-          TASK_ID=$(basename $TASK_ARN)
+          if [[ -z "$TASK_ARN" || "$TASK_ARN" == "None" ]]; then
+            echo "No RUNNING tasks found for $SERVICE" >&2
+            aws ecs describe-services --cluster "$CLUSTER" --services "$SERVICE" || true
+            exit 1
+          fi
+          echo "Task ARN: $TASK_ARN"
 
-          # Get public IP
-          TASK_IP=$(aws ecs describe-tasks \
-            --cluster crypto-service-cluster \
-            --tasks $TASK_ID \
-            --query 'tasks[0].attachments[0].details[?name==`publicIPv4Address`].value' \
+          # Get ENI ID from the task (awsvpc mode)
+          ENI_ID=$(aws ecs describe-tasks \
+            --cluster "$CLUSTER" \
+            --tasks "$TASK_ARN" \
+            --query "tasks[0].attachments[0].details[?name=='networkInterfaceId'].value | [0]" \
             --output text)
 
-          echo "Testing service at $TASK_IP:8080"
-          curl -f http://$TASK_IP:8080 || exit 1
+          if [[ -z "$ENI_ID" || "$ENI_ID" == "None" ]]; then
+            echo "Could not determine ENI for task $TASK_ARN" >&2
+            aws ecs describe-tasks --cluster "$CLUSTER" --tasks "$TASK_ARN" || true
+            exit 1
+          fi
+          echo "ENI ID: $ENI_ID"
+
+          # Resolve Public IP from ENI (requires assign_public_ip = true)
+          TASK_IP=$(aws ec2 describe-network-interfaces \
+            --network-interface-ids "$ENI_ID" \
+            --query "NetworkInterfaces[0].Association.PublicIp" \
+            --output text)
+
+          if [[ -z "$TASK_IP" || "$TASK_IP" == "None" ]]; then
+            echo "No Public IP found on ENI $ENI_ID. Is assign_public_ip=true?" >&2
+            exit 1
+          fi
+          echo "Public IP: $TASK_IP"
+
+          echo "Testing service at http://$TASK_IP:8080"
+          # retry because container might still be warming up
+          curl -fsS --retry 10 --retry-delay 3 "http://$TASK_IP:8080"
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: us-east-1
+          CLUSTER: crypto-service-cluster
+          SERVICE: crypto-service
 
       - name: Terraform Destroy
         if: always()
