@@ -22,7 +22,7 @@ jobs:
 
       - name: Build and run SQRs
         run: |
-          podman build -t crypto-service-sqr:latest
+          podman build -t crypto-service-sqr:latest .
 
           # Run static analysis and unit tests
           podman run --rm crypto-service-sqr make static-check
