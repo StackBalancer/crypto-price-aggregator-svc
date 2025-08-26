@@ -3,6 +3,7 @@
 A minimal microservice written in C language that fetches live Bitcoin price from Kraken API and serves it over HTTP API. It also provides a Prometheus /metrics endpoint for monitoring.
 
 ## Features
+
 - Simple HTTP API (/) → returns BTC price.
 - Written in C (libcurl + cJSON + libmicrohttpd)
 - Dockerized microservice
@@ -16,6 +17,16 @@ A minimal microservice written in C language that fetches live Bitcoin price fro
 
 ## Build & Run locally
 
+### Install dependencies
+
+- build-essential
+- libcurl4-openssl-dev
+- libmicrohttpd-dev
+- libcjson-dev
+- git
+- cmake
+- podman/docker
+
 ```bash
 make run
 ./crypto_service
@@ -25,7 +36,7 @@ make run
 ## Run static analysis
 
 ```bash
-make test
+make static-check
 ```
 
 ## Run unit tests

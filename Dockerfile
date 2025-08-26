@@ -3,8 +3,8 @@ FROM debian:stable-slim
 # Install dependencies
 RUN apt-get update && apt-get install -y \
     gcc make cmake curl libcurl4-openssl-dev \
-    libcjson-dev libmicrohttpd-dev \
-    git \
+    libcjson-dev libmicrohttpd-dev build-essential \
+    git cppcheck \
     && rm -rf /var/lib/apt/lists/*
 
 # Build libprom

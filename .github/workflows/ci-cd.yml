@@ -18,18 +18,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            build-essential \
-            libcurl4-openssl-dev \
-            libmicrohttpd-dev \
-            libcjson-dev \
-            cppcheck \
             podman
 
-      - name: Run static analysis
-        run: make static-check
+      - name: Build and run SQRs
+        run: |
+          podman build -t crypto-service-sqr:latest
 
-      - name: Run unit tests
-        run: make test
+          # Run static analysis and unit tests
+          podman run --rm crypto-service-sqr make static-check
+          podman run --rm crypto-service-sqr make test
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
