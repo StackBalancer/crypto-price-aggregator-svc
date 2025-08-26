@@ -20,13 +20,17 @@ jobs:
           sudo apt-get install -y \
             podman
 
-      - name: Build and run SQRs
+      - name: Build test container
         run: |
-          podman build -t crypto-service-sqr:latest .
+          podman build -t crypto-service-test -f Dockerfile.test .
 
-          # Run static analysis and unit tests
-          podman run --rm crypto-service-sqr make static-check
-          podman run --rm crypto-service-sqr make test
+      - name: Run static analysis
+        run: |
+          podman run --rm crypto-service-test make static-check
+
+      - name: Run unit tests
+        run: |
+          podman run --rm crypto-service-test make test
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

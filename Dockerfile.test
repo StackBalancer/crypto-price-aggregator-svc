@@ -1,10 +1,14 @@
-FROM debian:stable-slim
+FROM debian:bookworm-slim
 
-# Install dependencies
 RUN apt-get update && apt-get install -y \
-    gcc make cmake curl libcurl4-openssl-dev \
-    libcjson-dev libmicrohttpd-dev build-essential \
+    gcc cmake make \
+    build-essential \
+    libcurl4-openssl-dev \
+    libmicrohttpd-dev \
+    libcjson-dev \
+    pkg-config \
     git \
+    cppcheck \
     && rm -rf /var/lib/apt/lists/*
 
 # Build libprom
@@ -32,15 +36,6 @@ RUN git clone https://github.com/digitalocean/prometheus-client-c.git /tmp/libpr
     ldconfig
 
 WORKDIR /app
+COPY . .
 
-COPY Makefile .
-COPY src/ src/
-
-RUN make
-
-# Create container user
-RUN useradd -r -s /bin/false crypto-svc
-USER crypto-svc
-
-EXPOSE 8080
-CMD ["./crypto_service"]
+CMD ["/bin/bash"]
