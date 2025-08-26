@@ -1,20 +1,25 @@
 # Crypto Price Aggregator Service
 
-A minimal microservice written in C language that fetches live Bitcoin price from Kraken API and serves it over HTTP using **libmicrohttpd**.
+A minimal microservice written in C language that fetches live Bitcoin price from Kraken API and serves it over HTTP API. It also provides a Prometheus /metrics endpoint for monitoring.
 
 ## Features
+- Simple HTTP API (/) → returns BTC price.
 - Written in C (libcurl + cJSON + libmicrohttpd)
 - Dockerized microservice
 - Unit tests
 - Static analysis via `cppcheck`
 - CI/CD with GitHub Actions
 - Terraform (AWS deploy)
+- Prometheus metrics endpoint:
+  1. requests_total → count of HTTP requests.
+  2. btc_price_usd → current BTC price (updated on request).
 
 ## Build & Run locally
 
 ```bash
 make run
-# Service runs at http://localhost:8080
+./crypto_service
+# Service runs at http://localhost:8080 and http://localhost:8080/metrics
 ```
 
 ## Run static analysis
@@ -72,3 +77,46 @@ curl http://<TASK_PUBLIC_IP>:8080
 cd terraform
 terraform destroy -auto-approve
 ```
+
+## 🔍 Monitoring & Metrics
+
+This project includes a `/metrics` endpoint (Prometheus format) exposed by the crypto service.
+
+### Run Monitoring Stack
+
+```bash
+# Build service (Podman or Docker)
+podman-compose build --no-cache crypto-service
+podman-compose up -d
+
+# Test API
+curl -s http://localhost:8080/
+# {"BTC_USD": 109749.80}
+
+# Test Metrics
+curl http://localhost:8080/metrics | grep crypto
+# crypto_requests_total 1
+# crypto_btc_usd 109749.80
+
+# Go to Prometheus UI → http://localhost:9090/targets and check that crypto-service target is UP.
+```
+
+### Grafana Setup
+
+Open Grafana: http://localhost:3000
+
+Username: \<username\>
+
+Password: \<password\>
+
+Click Create → Import.
+
+Upload grafana-dashboard.json (provided in repo).
+
+Select Prometheus as the data source (http://prometheus:9090).
+
+Dashboard panels:
+
+Gauge: Current BTC/USD price (crypto_btc_usd)
+
+Graph: Total requests over time (crypto_requests_total)

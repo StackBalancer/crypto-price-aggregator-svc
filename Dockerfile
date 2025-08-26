@@ -2,9 +2,34 @@ FROM debian:stable-slim
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
-    gcc make curl libcurl4-openssl-dev \
+    gcc make cmake curl libcurl4-openssl-dev \
     libcjson-dev libmicrohttpd-dev \
+    git \
     && rm -rf /var/lib/apt/lists/*
+
+# Build libprom
+RUN git clone https://github.com/digitalocean/prometheus-client-c.git /tmp/libprom \
+    && cd /tmp/libprom/prom && \
+    mkdir build && cd build && \
+    cmake .. \
+    make && \
+    make install && \
+    cd && \
+    rm -rf /tmp/libprom && \
+    ldconfig
+
+# Build libpromhttp
+RUN git clone https://github.com/digitalocean/prometheus-client-c.git /tmp/libpromhttp \
+    && cd /tmp/libpromhttp/promhttp && \
+    # Patch promhttp_handler signature
+    sed -i 's/^int promhttp_handler(/enum MHD_Result promhttp_handler(/' src/promhttp.c && \
+    mkdir build && cd build && \
+    cmake .. && \
+    make && \
+    make install && \
+    cd && \
+    rm -rf /tmp/libpromhttp && \
+    ldconfig
 
 WORKDIR /app
 

@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = -Wall -I/usr/include/cjson
-LIBS = -lcurl -lmicrohttpd -lcjson
+CFLAGS = -Wall -I/usr/include/cjson -I/usr/local/include
+LIBS = -lcurl -lmicrohttpd -lcjson -lprom -lpromhttp
 
 SRC = src/crypto_lib.c src/crypto_service.c
 TEST_SRC = tests/test_crypto_svc.c

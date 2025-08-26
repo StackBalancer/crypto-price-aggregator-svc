@@ -1,0 +1,45 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "panels": [
+    {
+      "type": "gauge",
+      "title": "BTC/USD Price",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "crypto_btc_usd",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "min": 0,
+        "max": 100000,
+        "showThresholdLabels": true,
+        "showThresholdMarkers": true
+      }
+    },
+    {
+      "type": "graph",
+      "title": "Total Requests",
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 8 },
+      "targets": [
+        {
+          "expr": "crypto_requests_total",
+          "legendFormat": "{{instance}}",
+          "refId": "A"
+        }
+      ],
+      "lines": true,
+      "linewidth": 2,
+      "points": false,
+      "stack": false,
+      "fill": 1
+    }
+  ],
+  "schemaVersion": 36,
+  "version": 1,
+  "title": "Crypto Service Metrics",
+  "tags": ["crypto", "BTC", "Prometheus"]
+}
