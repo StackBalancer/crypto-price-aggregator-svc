@@ -5,27 +5,29 @@ A minimal microservice written in C language that fetches live Bitcoin price fro
 ## Features
 
 - Simple HTTP API (/) → returns BTC price.
-- Written in C (libcurl + cJSON + libmicrohttpd)
 - Dockerized microservice
 - Unit tests
 - Static analysis via `cppcheck`
 - CI/CD with GitHub Actions
 - Terraform (AWS deploy)
 - Prometheus metrics endpoint:
-  1. requests_total → count of HTTP requests.
-  2. btc_price_usd → current BTC price (updated on request).
+  - requests_total → count of HTTP requests.
+  - btc_price_usd → current BTC price (updated on request).
 
-## Build & Run locally
+## Build & Run
 
-### Install dependencies
+### Local Development
 
-- build-essential
-- libcurl4-openssl-dev
-- libmicrohttpd-dev
-- libcjson-dev
-- git
-- cmake
-- podman/docker
+To build and run locally, you need the following dependencies installed on your host:
+
+- `libprom`
+- `libpromhttpd`
+- `libmicrohttpd-dev`
+- `libcjson-dev`
+- `libcurl4-openssl-dev`
+- `build-essential`
+
+Then you can build and run:
 
 ```bash
 make run
@@ -33,23 +35,31 @@ make run
 # Service runs at http://localhost:8080 and http://localhost:8080/metrics
 ```
 
-## Run static analysis
+### Run static analysis
 
 ```bash
 make static-check
 ```
 
-## Run unit tests
+### Run unit tests
 
 ```bash
 make test
 ```
 
-## Run in Docker (Podman)
+### Buid & run in container (Docker/Podman)
 
 ```bash
-docker build -t crypto-service .
-docker run -p 8080:8080 crypto-service
+podman build -t crypto-service .
+podman run -p 8080:8080 crypto-service
+
+# Static check
+podman build -f Dockerfile.test -t crypto-service:test .
+podman run --rm crypto-service:test make static-check
+
+# Unit tests
+podman build -f Dockerfile.test -t crypto-service:test .
+podman run --rm crypto-service-sqr:test make test
 ```
 
 ## Deployment
@@ -58,8 +68,8 @@ docker run -p 8080:8080 crypto-service
 - AWS credentials with permissions for ECS, ECR, IAM, and VPC.
 - Terraform CLI installed.
 
-### Deploying
-1. Set environment variables on your Linux terminal or via GitHub secrets:
+### Deploying manually
+1. Set environment variables on your Linux terminal or via GitHub secrets (CI/CD):
 
 ```bash
 export AWS_ACCESS_KEY_ID="your_access_key"
@@ -89,6 +99,12 @@ cd terraform
 terraform destroy -auto-approve
 ```
 
+### CI/CD
+CI/CD microservice build, test and deployment to AWS ECS is automated via GitHub Actions with pipeline definition stored in [ci-cd.yml](.github/workflows/ci-cd.yml) file.
+
+> [!NOTE]  
+> Requires an IAM User created in AWS for CI/CD with restricted permissions and AWS Credentials added to GitHub.
+
 ## 🔍 Monitoring & Metrics
 
 This project includes a `/metrics` endpoint (Prometheus format) exposed by the crypto service.
@@ -114,20 +130,20 @@ curl http://localhost:8080/metrics | grep crypto
 
 ### Grafana Setup
 
-Open Grafana: http://localhost:3000
+* Open Grafana (http://localhost:3000):
 
-Username: \<username\>
+  - Username: \<username\>
 
-Password: \<password\>
+  - Password: \<password\>
 
-Click Create → Import.
+* Click Create → Import.
 
-Upload grafana-dashboard.json (provided in repo).
+* Upload [grafana-dashboard.json](grafana-dashboard.json).
 
-Select Prometheus as the data source (http://prometheus:9090).
+* Select Prometheus as the data source (http://prometheus:9090).
 
-Dashboard panels:
+* Dashboard panels:
 
-Gauge: Current BTC/USD price (crypto_btc_usd)
+  - Gauge: Current BTC/USD price (crypto_btc_usd)
 
-Graph: Total requests over time (crypto_requests_total)
+  - Graph: Total requests over time (crypto_requests_total)

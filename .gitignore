@@ -1,4 +1,4 @@
-# Ignore binary files
+# binary files
 crypto_service
 test_crypto_svc
 
@@ -11,3 +11,6 @@ terraform/terraform.tfstate.backup
 
 # text files
 *.txt
+
+# aws cli
+aws*
