@@ -31,6 +31,9 @@ static enum MHD_Result answer_to_connection(void *cls,
     // --- /metrics endpoint ---
     if (strcmp(url, "/metrics") == 0) {
         const char *metrics = prom_collector_registry_bridge(PROM_COLLECTOR_REGISTRY_DEFAULT);
+        if (!metrics) {
+            return MHD_NO;
+        }
 
         struct MHD_Response *response = MHD_create_response_from_buffer(strlen(metrics),
                                                                         (void *)metrics,
@@ -44,6 +47,17 @@ static enum MHD_Result answer_to_connection(void *cls,
 
     // --- Root "/" endpoint for BTC price ---
     double price = fetch_btc_price();
+    if (price < 0) {
+        const char *error_msg = "{\"error\": \"Failed to fetch BTC price\"}";
+        struct MHD_Response *response = MHD_create_response_from_buffer(strlen(error_msg),
+                                                                        (void *)error_msg,
+                                                                        MHD_RESPMEM_PERSISTENT);
+        MHD_add_response_header(response, "Content-Type", "application/json");
+        int ret = MHD_queue_response(connection, MHD_HTTP_SERVICE_UNAVAILABLE, response);
+        MHD_destroy_response(response);
+        return ret;
+    }
+    
     char buffer[256];
     snprintf(buffer, sizeof(buffer), "{\"BTC_USD\": %.2f}", price);
 
@@ -77,9 +91,17 @@ int main(void) {
                                    "Total number of / requests served", 0, NULL);
     btc_gauge = prom_gauge_new("crypto_btc_usd",
                                "Current BTC/USD price", 0, NULL);
+    
+    if (!req_counter || !btc_gauge) {
+        fprintf(stderr, "Failed to create Prometheus metrics\n");
+        return 1;
+    }
 
-    prom_collector_registry_register_metric(req_counter);
-    prom_collector_registry_register_metric(btc_gauge);
+    if (prom_collector_registry_register_metric(req_counter) != 0 ||
+        prom_collector_registry_register_metric(btc_gauge) != 0) {
+        fprintf(stderr, "Failed to register Prometheus metrics\n");
+        return 1;
+    }
 
     // Start HTTP daemon (serves both / and /metrics)
     struct MHD_Daemon *daemon;

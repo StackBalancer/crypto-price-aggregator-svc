@@ -44,12 +44,16 @@ double fetch_btc_price(void) {
             cJSON *json = cJSON_Parse(chunk.response);
             if (json) {
                 cJSON *result = cJSON_GetObjectItemCaseSensitive(json, "result");
-                cJSON *xbtusd = cJSON_GetObjectItemCaseSensitive(result, "XXBTZUSD");
-                if (xbtusd) {
-                    cJSON *c = cJSON_GetObjectItemCaseSensitive(xbtusd, "c");
-                    if (c && cJSON_GetArraySize(c) > 0) {
-                        cJSON *price_item = cJSON_GetArrayItem(c, 0);
-                        price = atof(price_item->valuestring);
+                if (result) {
+                    cJSON *xbtusd = cJSON_GetObjectItemCaseSensitive(result, "XXBTZUSD");
+                    if (xbtusd) {
+                        cJSON *c = cJSON_GetObjectItemCaseSensitive(xbtusd, "c");
+                        if (c && cJSON_GetArraySize(c) > 0) {
+                            cJSON *price_item = cJSON_GetArrayItem(c, 0);
+                            if (price_item && price_item->valuestring) {
+                                price = atof(price_item->valuestring);
+                            }
+                        }
                     }
                 }
                 cJSON_Delete(json);

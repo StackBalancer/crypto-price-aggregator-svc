@@ -4,15 +4,78 @@ A minimal microservice written in C language that fetches live Bitcoin price fro
 
 ## Features
 
-- Simple HTTP API (/) → returns BTC price.
+- Simple HTTP API (/) → returns BTC price with error handling
 - Dockerized microservice
 - Unit tests
 - Static analysis via `cppcheck`
 - CI/CD with GitHub Actions
 - Terraform (AWS deploy)
 - Prometheus metrics endpoint:
-  - requests_total → count of HTTP requests.
-  - btc_price_usd → current BTC price (updated on request).
+  - requests_total → count of HTTP requests
+  - btc_price_usd → current BTC price (updated on request)
+- Monitoring stack with Prometheus and Grafana
+
+## Changelog
+
+### v0.3.0 (Latest)
+- **Added**: Monitoring and metrics stack with Prometheus and Grafana
+- **Added**: Container security improvements (non-root user)
+- **Added**: Static and dynamic analysis in CI pipeline
+- **Improved**: Error handling for API failures and null pointer checks
+- **Fixed**: Robust smoke tests and ECR repository cleanup
+
+### v0.2.0
+- **Added**: Prometheus metrics endpoint (/metrics)
+- **Added**: Docker containerization
+- **Added**: AWS ECS deployment with Terraform
+- **Added**: CI/CD pipeline with GitHub Actions
+
+### v0.1.0
+- **Initial**: Basic HTTP server serving BTC price from Kraken API
+- **Added**: Unit tests and static analysis
+
+## Production Readiness TODO
+
+### Security
+- [ ] Implement proper authentication/authorization
+- [ ] Add rate limiting to prevent API abuse
+- [ ] Use secrets management (AWS Secrets Manager/Parameter Store)
+- [ ] Enable HTTPS/TLS encryption
+- [ ] Implement input validation and sanitization
+- [ ] Add security headers (CORS, CSP, etc.)
+- [ ] Regular security scanning and vulnerability assessments
+
+### Reliability & Performance
+- [ ] Add connection pooling for HTTP requests
+- [ ] Implement circuit breaker pattern for external API calls
+- [ ] Add caching layer (Redis) for price data
+- [ ] Implement graceful shutdown handling
+- [ ] Add health check endpoints (/health, /ready)
+- [ ] Configure proper resource limits and auto-scaling
+- [ ] Add database for historical price data
+
+### Monitoring & Observability
+- [ ] Structured logging with correlation IDs
+- [ ] Distributed tracing (AWS X-Ray/OpenTelemetry)
+- [ ] Custom business metrics and SLIs/SLOs
+- [ ] Alerting rules and runbooks
+- [ ] Log aggregation and analysis
+- [ ] Performance monitoring and profiling
+
+### Infrastructure & Operations
+- [ ] Multi-region deployment for high availability
+- [ ] Load balancer with health checks
+- [ ] Backup and disaster recovery procedures
+- [ ] Infrastructure as Code validation and testing
+- [ ] Container image vulnerability scanning
+- [ ] Compliance and audit logging
+
+### Code Quality & Maintenance
+- [ ] Comprehensive integration and end-to-end tests
+- [ ] Code coverage reporting and enforcement
+- [ ] API documentation (OpenAPI/Swagger)
+- [ ] Dependency management and security updates
+- [ ] Performance benchmarking and load testing
 
 ## Build & Run
 
@@ -59,7 +122,7 @@ podman run --rm crypto-service:test make static-check
 
 # Unit tests
 podman build -f Dockerfile.test -t crypto-service:test .
-podman run --rm crypto-service-sqr:test make test
+podman run --rm crypto-service:test make test
 ```
 
 ## Deployment
@@ -132,9 +195,9 @@ curl http://localhost:8080/metrics | grep crypto
 
 * Open Grafana (http://localhost:3000):
 
-  - Username: \<username\>
+  - Username: admin
 
-  - Password: \<password\>
+  - Password: admin
 
 * Click Create → Import.
 
